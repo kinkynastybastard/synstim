@@ -4,17 +4,17 @@ import com.jsyn.ports.UnitInputPort;
 import com.jsyn.ports.UnitVariablePort;
 import com.jsyn.unitgen.UnitOscillator;
 
-
 public class StimOscillator extends UnitOscillator {
-	public UnitInputPort pulsewidth;
-	public UnitVariablePort waveformselect;
+	//generates the base audio tone used for estim purposes 
+	public UnitInputPort pulsewidth;			//port for adjusting the pulsewidth
+	public UnitVariablePort waveformselect;		//port for selecting the waveform
 	
 	public StimOscillator() {
 		addPort(pulsewidth = new UnitInputPort("pulsewidth"));
 		addPort(waveformselect = new UnitVariablePort("waveformselect"));
 	}
 	public void waveform_select(int w) {
-		waveformselect.set(w);
+		waveformselect.set(w);					//0 for balanced pulse, 1 for impulse pulse, 2 for sine
 	}
     public void on() {
     	setEnabled(true);
@@ -31,7 +31,7 @@ public class StimOscillator extends UnitOscillator {
         double currentPhase = phase.getValue();
 		
         switch((int) waveformselect.getValue()) {
-    		case 0: {//bPulse
+    		case 0: {							//bPulse
     			for (int i = start; i < limit; i++) {
 	                double phaseIncrement = convertFrequencyToPhaseIncrement(frequencies[i]);
 	                currentPhase = incrementWrapPhase(currentPhase, phaseIncrement);
@@ -47,7 +47,7 @@ public class StimOscillator extends UnitOscillator {
 	            phase.setValue(currentPhase);
 	            break;
     		}
-    		case 1: {//iPulse
+    		case 1: {							//iPulse
 	            for (int i = start; i < limit; i++) {
 	                double phaseIncrement = convertFrequencyToPhaseIncrement(frequencies[i]);
 	                currentPhase = incrementWrapPhase(currentPhase, phaseIncrement);
@@ -63,12 +63,11 @@ public class StimOscillator extends UnitOscillator {
 	            phase.setValue(currentPhase);
 	            break;
     		}
-    		case 2: {//sine
+    		case 2: {							//sine
 	            for (int i = start; i < limit; i++) {
 	                double phaseIncrement = convertFrequencyToPhaseIncrement(frequencies[i]);	           
 	                currentPhase = incrementWrapPhase(currentPhase, phaseIncrement);
 	                outputs[i] = Math.sin(currentPhase * Math.PI) * amplitudes[i];
-	                //System.out.println(outputs[i]);
 	            }
 	            phase.setValue(currentPhase);
 	            break;
