@@ -1,6 +1,7 @@
 package com.synstim.main;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
@@ -12,12 +13,15 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.UIManager;
+import javax.swing.plaf.FontUIResource;
 
 import com.jsyn.JSyn;
 import com.jsyn.Synthesizer;
 import com.jsyn.ports.UnitInputPort;
 import com.jsyn.scope.AudioScope;
 import com.jsyn.scope.AudioScopeProbe;
+import com.jsyn.swing.DoubleBoundedRangeSlider;
 import com.jsyn.swing.JAppletFrame;
 import com.jsyn.swing.PortControllerFactory;
 import com.jsyn.unitgen.LineOut;
@@ -31,8 +35,8 @@ public class SynStim extends JApplet {
 	public static final String WAVEFORMS_PULSEGEN[] = {"Biphasic Balanced", "Biphasic Impulse", "Sine"};
 	public static final String WAVEFORMS_LFO[] 		= {"Sine", "Triangle", "Ramp Up", "Ramp Down", "Pulse"};
 	public static final double PULSEGEN_FREQ_MIN 	= 25;
-	public static final double PULSEGEN_FREQ_MEDIAN	= 100;
-	public static final double PULSEGEN_FREQ_MAX	= 500;
+	public static final double PULSEGEN_FREQ_MEDIAN	= 200;
+	public static final double PULSEGEN_FREQ_MAX	= 1000;
 	public static final double PULSEGEN_AMP_MIN		= 0.0;
 	public static final double PULSEGEN_AMP_MEDIAN	= 0.5;
 	public static final double PULSEGEN_AMP_MAX		= 1.0;
@@ -197,6 +201,10 @@ public class SynStim extends JApplet {
     }
     
     private void setupGUI() {
+    	UIManager.put("Label.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 40)));
+    	UIManager.put("ComboBox.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 12)));
+    	UIManager.put("ToggleButton.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 12)));
+    	UIManager.put("TitledBorder.font", new FontUIResource(new Font("Dialog", Font.PLAIN, 12)));
 		setLayout(new BorderLayout());
 		add(BorderLayout.NORTH, new JLabel("SynStim"));
 		scope = new AudioScope(syn);
@@ -210,14 +218,16 @@ public class SynStim extends JApplet {
 		scope.getView().setControlsVisible(false);
 		add(BorderLayout.SOUTH, scope.getView());
 		chanApanel = new JPanel();
-		chanApanel.setLayout(new GridLayout(4,0));
+		chanApanel.setLayout(new GridLayout(5,0));
+		chanApanel.add(new JLabel("Channel A"));
 		chanApanel.add(setupOscGUI(chanA.stim, LRA_frequency, LRA_amplitude, LRA_pulsewidth, LRA_phase, "A"));
 		chanApanel.add(setupOscGUI(chanA, LRA_fm_frequency, LRA_fm_depth, LRA_fm_dutycycle, LRA_fm_phase, 0));
 		chanApanel.add(setupOscGUI(chanA, LRA_am_frequency, LRA_am_depth, LRA_am_dutycycle, LRA_am_phase, 1));
 		chanApanel.add(setupOscGUI(chanA, LRA_pwm_frequency, LRA_pwm_depth, LRA_pwm_dutycycle, LRA_pwm_phase, 2));
 		add(BorderLayout.WEST, chanApanel);
 	    chanBpanel = new JPanel();
-		chanBpanel.setLayout(new GridLayout(4,0));
+		chanBpanel.setLayout(new GridLayout(5,0));
+		chanBpanel.add(new JLabel("Channel B"));
 		chanBpanel.add(setupOscGUI(chanB.stim, LRB_frequency, LRB_amplitude, LRB_pulsewidth, LRB_phase, "B"));
 		chanBpanel.add(setupOscGUI(chanB, LRB_fm_frequency, LRB_fm_depth, LRB_fm_dutycycle, LRB_fm_phase, 0));
 		chanBpanel.add(setupOscGUI(chanB, LRB_am_frequency, LRB_am_depth, LRB_am_dutycycle, LRB_am_phase, 1));
@@ -250,7 +260,7 @@ public class SynStim extends JApplet {
         	}
     	});
     	panel.add(waveformselect);
-        JToggleButton onfoff = new JToggleButton("Channel " + chan + " ON/OFF");
+        JToggleButton onfoff = new JToggleButton("ON/OFF");
         onfoff.addItemListener(new ItemListener() {
         	public void itemStateChanged(ItemEvent itemEvent) {
         		if(stim.isEnabled()) {
@@ -406,12 +416,10 @@ public class SynStim extends JApplet {
 
 	public static void main(String[] args) {
 		SynStim synstim = new SynStim();
-		JAppletFrame frame = new JAppletFrame("SynStim v0.5", synstim);
+		JAppletFrame frame = new JAppletFrame("SynStim v0.5.01", synstim);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
         frame.test();
         frame.validate();
-
 	}
-
 }
