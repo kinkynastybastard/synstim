@@ -1,12 +1,14 @@
 package com.synstim.main;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JApplet;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -28,8 +30,8 @@ public class SynStim extends JApplet {
 	public static final String CHANNELS[]			= {"A", "B"};
 	public static final String WAVEFORMS_PULSEGEN[] = {"Biphasic Balanced", "Biphasic Impulse", "Sine"};
 	public static final String WAVEFORMS_LFO[] 		= {"Sine", "Triangle", "Ramp Up", "Ramp Down", "Pulse"};
-	public static final double PULSEGEN_FREQ_MIN 	= 50;
-	public static final double PULSEGEN_FREQ_MEDIAN	= 300;
+	public static final double PULSEGEN_FREQ_MIN 	= 25;
+	public static final double PULSEGEN_FREQ_MEDIAN	= 220;
 	public static final double PULSEGEN_FREQ_MAX	= 1000;
 	public static final double PULSEGEN_AMP_MIN		= 0.0;
 	public static final double PULSEGEN_AMP_MEDIAN	= 0.5;
@@ -206,19 +208,27 @@ public class SynStim extends JApplet {
 		probeB.setVerticalScale(0);
 		scope.setTriggerMode(AudioScope.TriggerMode.NORMAL);
 		scope.getView().setControlsVisible(false);
-		add(BorderLayout.CENTER, scope.getView());
+		add(BorderLayout.SOUTH, scope.getView());
 		chanApanel = new JPanel();
-		chanApanel.setLayout(new GridLayout(4,4));
+		chanApanel.setLayout(new GridLayout(4,0));
 		chanApanel.add(setupOscGUI(chanA.stim, LRA_frequency, LRA_amplitude, LRA_pulsewidth, LRA_phase, "A"));
-		chanApanel.add(setupOscGUI(chanA, LRA_fm_frequency, LRA_fm_depth, LRA_fm_dutycycle, LRA_fm_phase, LRA_am_frequency, LRA_am_depth, LRA_am_dutycycle, LRA_am_phase, LRA_pwm_frequency, LRA_pwm_depth, LRA_pwm_dutycycle, LRA_pwm_phase));
+		chanApanel.add(setupOscGUI(chanA, LRA_fm_frequency, LRA_fm_depth, LRA_fm_dutycycle, LRA_fm_phase, 0));
+		chanApanel.add(setupOscGUI(chanA, LRA_am_frequency, LRA_am_depth, LRA_am_dutycycle, LRA_am_phase, 1));
+		chanApanel.add(setupOscGUI(chanA, LRA_pwm_frequency, LRA_pwm_depth, LRA_pwm_dutycycle, LRA_pwm_phase, 2));
 		add(BorderLayout.WEST, chanApanel);
+	    chanBpanel = new JPanel();
+		chanBpanel.setLayout(new GridLayout(4,0));
+		chanBpanel.add(setupOscGUI(chanB.stim, LRB_frequency, LRB_amplitude, LRB_pulsewidth, LRB_phase, "B"));
+		chanBpanel.add(setupOscGUI(chanB, LRB_fm_frequency, LRB_fm_depth, LRB_fm_dutycycle, LRB_fm_phase, 0));
+		chanBpanel.add(setupOscGUI(chanB, LRB_am_frequency, LRB_am_depth, LRB_am_dutycycle, LRB_am_phase, 1));
+		chanBpanel.add(setupOscGUI(chanB, LRB_pwm_frequency, LRB_pwm_depth, LRB_pwm_dutycycle, LRB_pwm_phase, 2));
+		add(BorderLayout.EAST, chanBpanel);
 		validate();
     }
     
     private JPanel setupOscGUI(StimOscillator stim, LinearRamp freq, LinearRamp amp, LinearRamp pw, LinearRamp phase, String chan) {
-    	
     	JPanel panel = new JPanel();
-    	panel.setLayout(new GridLayout());
+    	panel.setLayout(new GridBagLayout());
     	addPortControllers(panel, freq, amp, pw, phase);
     	stim.waveformselect.set(0);
     	JComboBox waveformselect = new JComboBox(SynStim.WAVEFORMS_PULSEGEN);
@@ -255,138 +265,135 @@ public class SynStim extends JApplet {
         return panel;
 	}
         
-    private JPanel setupOscGUI(PulseGenerator pg, LinearRamp fm_freq, LinearRamp fm_depth, LinearRamp fm_dc, LinearRamp fm_ph, LinearRamp am_freq, LinearRamp am_depth, LinearRamp am_dc, LinearRamp am_ph, LinearRamp pwm_freq, LinearRamp pwm_depth, LinearRamp pwm_dc, LinearRamp pwm_ph) {
+    private JPanel setupOscGUI(PulseGenerator pg, LinearRamp freq, LinearRamp depth, LinearRamp dc, LinearRamp ph, int select) {
     	JPanel panel = new JPanel();
-    	panel.setLayout(new GridLayout(3,3));
-    	//FM
-    	JPanel fm_panel = new JPanel();
-    	fm_panel.setLayout(new GridLayout());
-    	addPortControllers(fm_panel, fm_freq, fm_depth, fm_dc, fm_ph);
-		pg.fm.waveformselect.set(0);
-    	JComboBox fm_waveformselect = new JComboBox(SynStim.WAVEFORMS_LFO);
-    	fm_waveformselect.addItemListener(new ItemListener() {
-        	public void itemStateChanged(ItemEvent itemEvent) {
-        		if (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[0]) {
-        			pg.fm.waveformselect.set(0);
-        		}
-        		else if  (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[1]) {
-        			pg.fm.waveformselect.set(1);
-        		}
-        		else if  (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[2]) {
-        			pg.fm.waveformselect.set(2);
-        		}
-        		else if  (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[3]) {
-        			pg.fm.waveformselect.set(3);
-        		}
-        		else if  (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[4]) {
-        			pg.fm.waveformselect.set(4);
-        		}
-           		else {
-         			System.err.print("***ERROR***");
-         			System.exit(0);
-         		}
-        	}
-    	});
-    	fm_panel.add(fm_waveformselect);
-        JToggleButton fm_onfoff = new JToggleButton("FM ON/OFF");
-        fm_onfoff.addItemListener(new ItemListener() {
-        	public void itemStateChanged(ItemEvent itemEvent) {
-        		if(pg.fm.isEnabled()) {
-        			pg.fm_off();			
-        		}
-        		else {
-        			pg.fm_on();
-        		}
-        	}
-        });
-        fm_panel.add(fm_onfoff);
-        panel.add(fm_panel);
-        //AM
-    	JPanel am_panel = new JPanel();
-    	am_panel.setLayout(new GridLayout());
-    	addPortControllers(am_panel, am_freq, am_depth, am_dc, am_ph);
-		pg.am.waveformselect.set(0);
-    	JComboBox am_waveformselect = new JComboBox(SynStim.WAVEFORMS_LFO);
-    	am_waveformselect.addItemListener(new ItemListener() {
-        	public void itemStateChanged(ItemEvent itemEvent) {
-        		if (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[0]) {
-        			pg.am.waveformselect.set(0);
-        		}
-        		else if  (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[1]) {
-        			pg.am.waveformselect.set(1);
-        		}
-        		else if  (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[2]) {
-        			pg.am.waveformselect.set(2);
-        		}
-        		else if  (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[3]) {
-        			pg.am.waveformselect.set(3);
-        		}
-        		else if  (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[4]) {
-        			pg.am.waveformselect.set(4);
-        		}
-           		else {
-         			System.err.print("***ERROR***");
-         			System.exit(0);
-         		}
-        	}
-    	});
-    	am_panel.add(am_waveformselect);
-        JToggleButton am_onfoff = new JToggleButton("AM ON/OFF");
-        am_onfoff.addItemListener(new ItemListener() {
-        	public void itemStateChanged(ItemEvent itemEvent) {
-        		if(pg.am.isEnabled()) {
-        			pg.am_off();			
-        		}
-        		else {
-        			pg.am_on();
-        		}
-        	}
-        });
-        am_panel.add(am_onfoff);
-        panel.add(am_panel);
-        //PWM
-        JPanel pwm_panel = new JPanel();
-    	pwm_panel.setLayout(new GridLayout());
-    	addPortControllers(pwm_panel, pwm_freq, pwm_depth, pwm_dc, pwm_ph);
-		pg.pwm.waveformselect.set(0);
-    	JComboBox pwm_waveformselect = new JComboBox(SynStim.WAVEFORMS_LFO);
-    	pwm_waveformselect.addItemListener(new ItemListener() {
-        	public void itemStateChanged(ItemEvent itemEvent) {
-        		if (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[0]) {
-        			pg.pwm.waveformselect.set(0);
-        		}
-        		else if  (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[1]) {
-        			pg.pwm.waveformselect.set(1);
-        		}
-        		else if  (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[2]) {
-        			pg.pwm.waveformselect.set(2);
-        		}
-        		else if  (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[3]) {
-        			pg.pwm.waveformselect.set(3);
-        		}
-        		else if  (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[4]) {
-        			pg.pwm.waveformselect.set(4);
-        		}
-           		else {
-         			System.err.print("***ERROR***");
-         			System.exit(0);
-         		}
-        	}
-    	});
-    	pwm_panel.add(pwm_waveformselect);
-        JToggleButton pwm_onfoff = new JToggleButton("PWM ON/OFF");
-        pwm_onfoff.addItemListener(new ItemListener() {
-        	public void itemStateChanged(ItemEvent itemEvent) {
-        		if(pg.pwm.isEnabled()) {
-        			pg.pwm_off();			
-        		}
-        		else {
-        			pg.pwm_on();
-        		}
-        	}
-        });
-        pwm_panel.add(pwm_onfoff);
-        panel.add(pwm_panel);
+    	panel.setLayout(new GridBagLayout());
+    	addPortControllers(panel, freq, depth, dc, ph);
+    	switch(select) {
+	    	case 0 : { //FM
+	    		pg.fm.waveformselect.set(0);
+	        	JComboBox fm_waveformselect = new JComboBox(SynStim.WAVEFORMS_LFO);
+	        	fm_waveformselect.addItemListener(new ItemListener() {
+	            	public void itemStateChanged(ItemEvent itemEvent) {
+	            		if (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[0]) {
+	            			pg.fm.waveformselect.set(0);
+	            		}
+	            		else if  (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[1]) {
+	            			pg.fm.waveformselect.set(1);
+	            		}
+	            		else if  (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[2]) {
+	            			pg.fm.waveformselect.set(2);
+	            		}
+	            		else if  (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[3]) {
+	            			pg.fm.waveformselect.set(3);
+	            		}
+	            		else if  (fm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[4]) {
+	            			pg.fm.waveformselect.set(4);
+	            		}
+	               		else {
+	             			System.err.print("***ERROR***");
+	             			System.exit(0);
+	             		}
+	            	}
+	        	});
+	        	panel.add(fm_waveformselect);
+	            JToggleButton fm_onfoff = new JToggleButton("FM ON/OFF");
+	            fm_onfoff.addItemListener(new ItemListener() {
+	            	public void itemStateChanged(ItemEvent itemEvent) {
+	            		if(pg.fm.isEnabled()) {
+	            			pg.fm_off();			
+	            		}
+	            		else {
+	            			pg.fm_on();
+	            		}
+	            	}
+	            });
+	            panel.add(fm_onfoff);
+	    	}
+	    	break;
+	    	case 1 : { //AM
+	    		pg.am.waveformselect.set(0);
+	        	JComboBox am_waveformselect = new JComboBox(SynStim.WAVEFORMS_LFO);
+	        	am_waveformselect.addItemListener(new ItemListener() {
+	            	public void itemStateChanged(ItemEvent itemEvent) {
+	            		if (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[0]) {
+	            			pg.am.waveformselect.set(0);
+	            		}
+	            		else if  (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[1]) {
+	            			pg.am.waveformselect.set(1);
+	            		}
+	            		else if  (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[2]) {
+	            			pg.am.waveformselect.set(2);
+	            		}
+	            		else if  (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[3]) {
+	            			pg.am.waveformselect.set(3);
+	            		}
+	            		else if  (am_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[4]) {
+	            			pg.am.waveformselect.set(4);
+	            		}
+	               		else {
+	             			System.err.print("***ERROR***");
+	             			System.exit(0);
+	             		}
+	            	}
+	        	});
+	        	panel.add(am_waveformselect);
+	            JToggleButton am_onfoff = new JToggleButton("AM ON/OFF");
+	            am_onfoff.addItemListener(new ItemListener() {
+	            	public void itemStateChanged(ItemEvent itemEvent) {
+	            		if(pg.am.isEnabled()) {
+	            			pg.am_off();			
+	            		}
+	            		else {
+	            			pg.am_on();
+	            		}
+	            	}
+	            });
+	            panel.add(am_onfoff);
+	    	}
+	    	break;
+	    	case 2 : { //PWM
+	    		pg.pwm.waveformselect.set(0);
+	        	JComboBox pwm_waveformselect = new JComboBox(SynStim.WAVEFORMS_LFO);
+	        	pwm_waveformselect.addItemListener(new ItemListener() {
+	            	public void itemStateChanged(ItemEvent itemEvent) {
+	            		if (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[0]) {
+	            			pg.pwm.waveformselect.set(0);
+	            		}
+	            		else if  (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[1]) {
+	            			pg.pwm.waveformselect.set(1);
+	            		}
+	            		else if  (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[2]) {
+	            			pg.pwm.waveformselect.set(2);
+	            		}
+	            		else if  (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[3]) {
+	            			pg.pwm.waveformselect.set(3);
+	            		}
+	            		else if  (pwm_waveformselect.getSelectedItem() == SynStim.WAVEFORMS_LFO[4]) {
+	            			pg.pwm.waveformselect.set(4);
+	            		}
+	               		else {
+	             			System.err.print("***ERROR***");
+	             			System.exit(0);
+	             		}
+	            	}
+	        	});
+	        	panel.add(pwm_waveformselect);
+	            JToggleButton pwm_onfoff = new JToggleButton("PWM ON/OFF");
+	            pwm_onfoff.addItemListener(new ItemListener() {
+	            	public void itemStateChanged(ItemEvent itemEvent) {
+	            		if(pg.pwm.isEnabled()) {
+	            			pg.pwm_off();			
+	            		}
+	            		else {
+	            			pg.pwm_on();
+	            		}
+	            	}
+	            });
+	            panel.add(pwm_onfoff);
+	    	}
+	    	break;
+    	} 	
         return panel;
 	}
 
@@ -400,7 +407,7 @@ public class SynStim extends JApplet {
 	public static void main(String[] args) {
 		SynStim synstim = new SynStim();
 		JAppletFrame frame = new JAppletFrame("SynStim v0.5", synstim);
-        frame.setSize(1800, 1000);
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
         frame.test();
         frame.validate();

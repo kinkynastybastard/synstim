@@ -52,7 +52,7 @@ public class StimOscillator extends UnitOscillator {
 	                double phaseIncrement = convertFrequencyToPhaseIncrement(frequencies[i]);
 	                currentPhase = incrementWrapPhase(currentPhase, phaseIncrement);
 	                double ampl = amplitudes[i];
-	                double scale = widths[i] / (1 / frequencies[i] * 500000);
+	                double scale = widths[i] * 2 / (1 / frequencies[i] * 1000000);
 	            	if (currentPhase + 1 < scale )
 	            		outputs[i] = ampl;
 	            	else if ((currentPhase + 1  >= scale ) && (currentPhase + 1 < scale * 2))
