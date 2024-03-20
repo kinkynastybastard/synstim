@@ -12,6 +12,7 @@ public class StimOscillator extends UnitOscillator {
 	public StimOscillator() {
 		addPort(pulsewidth = new UnitInputPort("pulsewidth"));
 		addPort(waveformselect = new UnitVariablePort("waveformselect"));
+		waveformselect.set(0);
 	}
 	public void waveform_select(int w) {
 		waveformselect.set(w);					//0 for balanced pulse, 1 for impulse pulse, 2 for sine

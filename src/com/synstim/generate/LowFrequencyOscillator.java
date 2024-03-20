@@ -29,6 +29,7 @@ public class LowFrequencyOscillator extends UnitOscillator {
 	public void generate(int start, int limit) {
         double[] frequencies = frequency.getValues();
         double[] amplitudes = amplitude.getValues();
+        double[] dutycycles = dutycycle.getValues();
         double[] outputs = output.getValues();
         double currentPhase = phase.getValue();
         switch((int) waveformselect.getValue()) {
@@ -72,8 +73,7 @@ public class LowFrequencyOscillator extends UnitOscillator {
     	   		for (int i = start; i < limit; i++) {
 				double phaseIncrement = convertFrequencyToPhaseIncrement(frequencies[i]);
 				currentPhase = incrementWrapPhase(currentPhase, phaseIncrement);
-				
-            	if ((currentPhase + 1) /2 < dutycycle.get()) 
+            	if ((currentPhase + 1) /2 < dutycycles[i]) 
             		outputs[i] =  1 * amplitudes[i];
             	else
             		outputs[i] =  -1 * amplitudes[i]; 

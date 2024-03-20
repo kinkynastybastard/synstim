@@ -7,6 +7,7 @@ import com.jsyn.unitgen.Add;
 import com.jsyn.unitgen.Circuit;
 
 public class PulseGenerator extends Circuit {
+	public String channel_name;
 	public StimOscillator stim;
 	public LowFrequencyOscillator fm;
 	public LowFrequencyOscillator am;
@@ -26,6 +27,7 @@ public class PulseGenerator extends Circuit {
 	public UnitOutputPort output;
 	
 	public PulseGenerator(String name) {
+		this.channel_name = name;
 		this.add(fm = new LowFrequencyOscillator());
 		fm.off();
 		this.add(am = new LowFrequencyOscillator());
