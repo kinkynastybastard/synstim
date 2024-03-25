@@ -1,26 +1,40 @@
 package com.synstim.main;
 
+import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
+import javax.swing.JApplet;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 
 import com.jsyn.JSyn;
 import com.jsyn.Synthesizer;
+import com.jsyn.ports.UnitInputPort;
 import com.jsyn.scope.AudioScope;
 import com.jsyn.scope.AudioScopeProbe;
+import com.jsyn.swing.DoubleBoundedRangeSlider;
+import com.jsyn.swing.JAppletFrame;
+import com.jsyn.swing.PortControllerFactory;
 import com.jsyn.unitgen.LineOut;
+import com.jsyn.unitgen.LinearRamp;
 import com.synstim.generate.PulseGenerator;
+import com.synstim.generate.StimOscillator;
 import com.synstim.gui.PulseGeneratorGUI;
-import com.synstim.gui.SynStimGUI;
 import com.synstim.misc.SynStimController;
 
 import net.miginfocom.layout.CC;
 import net.miginfocom.swing.MigLayout;
 
-public class SynStim {
+public class SynStim extends JApplet {
 	public static final int    FONTSIZE_LABEL		= 16;
 	public static final int    FONTSIZE_TITLE		= 40;
 	public static final String MODES[]				= {"Channel", "FM", "AM", "PWM"};
@@ -70,10 +84,9 @@ public class SynStim {
 	PulseGeneratorGUI chanBGUI;
 	
 	
+	@Override
 	public void start() {
 		syn = JSyn.createSynthesizer();
-		
-		scope = new AudioScope(syn);
 		syn.add(lineout = new LineOut());
 		syn.add(chanA = new PulseGenerator("A"));
 		syn.add(chanB = new PulseGenerator("B"));
@@ -83,33 +96,49 @@ public class SynStim {
 		ctrlChanB = new SynStimController(syn, chanB, "B");
 		syn.start();
     	lineout.start();
-		AudioScopeProbe probeA = scope.addProbe(chanA.output);
-		AudioScopeProbe probeB = scope.addProbe(chanB.output);
-		probeA.setAutoScaleEnabled(true);
-		probeB.setAutoScaleEnabled(true);
-		probeA.setVerticalScale(0);
-		probeB.setVerticalScale(0);
-		scope.setTriggerMode(AudioScope.TriggerMode.NORMAL);
-		scope.getView().setControlsVisible(false);
-    	scope.start();    	
+    	setupGUI();
+    	scope.start();
 	}
 	
+
+	
+    @Override
     public void stop() {
     	syn.stop();
     	lineout.stop();
     	scope.stop();
     }
     
+    private void setupGUI() {
+    	UIManager.put("Label.font", new FontUIResource(new Font("Dialog", Font.PLAIN, SynStim.FONTSIZE_TITLE)));
+    	UIManager.put("ComboBox.font", new FontUIResource(new Font("Dialog", Font.PLAIN, SynStim.FONTSIZE_LABEL)));
+    	UIManager.put("ToggleButton.font", new FontUIResource(new Font("Dialog", Font.PLAIN, SynStim.FONTSIZE_LABEL)));
+    	UIManager.put("TitledBorder.font", new FontUIResource(new Font("Dialog", Font.PLAIN, SynStim.FONTSIZE_LABEL)));
+		setLayout(new MigLayout("wrap 2, fill"));
+		CC centering = new CC();
+		centering.alignX("center").spanX();
+		add(new JLabel("SynStim"), "span 3, center");
+		add(chanAGUI = new PulseGeneratorGUI(chanA, ctrlChanA, "A"),"cell 1 1");
+		add(chanBGUI = new PulseGeneratorGUI(chanB, ctrlChanB, "B"),"cell 2 1");
+		scope = new AudioScope(syn);
+		AudioScopeProbe probeA = scope.addProbe(chanA.output);
+		AudioScopeProbe probeB = scope.addProbe(chanB.output);
+		probeA.setAutoScaleEnabled(true);
+		probeB.setAutoScaleEnabled(true);
+		//probeA.setVerticalScale(0);
+		//probeB.setVerticalScale(0);
+		scope.setTriggerMode(AudioScope.TriggerMode.NORMAL);
+		scope.getView().setControlsVisible(false);
+		add(scope.getView(), centering);
+		validate();
+    }
 
 	public static void main(String[] args) {
 		SynStim synstim = new SynStim();
-		JFrame frame = new JFrame("SynStim v0.5.05");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JAppletFrame frame = new JAppletFrame("SynStim v0.5.01", synstim);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        synstim.start();
-        SynStimGUI stimGUI = new SynStimGUI(synstim.chanA, synstim.chanB, synstim.ctrlChanA, synstim.ctrlChanB, synstim.scope);
-        frame.getContentPane().add(stimGUI);
         frame.setVisible(true);
+        frame.test();
         frame.validate();
 	}
 }
