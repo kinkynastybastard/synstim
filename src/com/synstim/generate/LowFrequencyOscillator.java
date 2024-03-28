@@ -1,19 +1,90 @@
 package com.synstim.generate;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
+import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+
 import com.jsyn.ports.UnitInputPort;
 import com.jsyn.ports.UnitVariablePort;
+import com.jsyn.swing.DoubleBoundedRangeModel;
+import com.jsyn.swing.PortModelFactory;
+import com.jsyn.swing.RotaryTextController;
 import com.jsyn.unitgen.UnitOscillator;
+import com.synstim.main.SynStim;
+
+import net.miginfocom.swing.MigLayout;
 
 public class LowFrequencyOscillator extends UnitOscillator {
+	public String name;
+	public DoubleBoundedRangeModel freq_model;
+	public RotaryTextController freq_knob;
+	public DoubleBoundedRangeModel depth_model;
+	public RotaryTextController depth_knob;
+	public DoubleBoundedRangeModel dutycycle_model;
+	public RotaryTextController dutycycle_knob;
 	public UnitInputPort depth;
 	public UnitInputPort dutycycle;
 	public UnitVariablePort waveformselect;
+	public JPanel lfo_panel;
 	
-	public LowFrequencyOscillator() {
+	public LowFrequencyOscillator(String name, double fmin, double fmax, double dmin, double dmax, double dcmin, double dcmax) {
+		this.name = name;
 		addPort(depth = this.amplitude);
 		addPort(dutycycle = new UnitInputPort("dutycycle"));
 		addPort(waveformselect = new UnitVariablePort("waveformselect"));
-
+		freq_knob = setupLinearPortKnob(this.frequency, freq_knob, freq_model, fmin, fmax, "Frequency");
+		depth_knob = setupLinearPortKnob(this.depth, depth_knob, depth_model, dmin, dmax, "Depth");
+		dutycycle_knob = setupLinearPortKnob(this.dutycycle, dutycycle_knob, dutycycle_model, dcmin, dcmax, "Duty Cycle");	
+		lfo_panel = new JPanel(new MigLayout("wrap 5"));
+		lfo_panel.add(freq_knob);
+		lfo_panel.add(depth_knob);
+		lfo_panel.add(dutycycle_knob);
+		this.waveformselect.set(0);
+		dutycycle_knob.setVisible(false);
+		JComboBox wfsel = new JComboBox(SynStim.WAVEFORMS_LFO);
+		wfsel.addItemListener(new ItemListener() {
+	    	public void itemStateChanged(ItemEvent itemEvent) {
+	    		dutycycle_knob.setVisible(false);
+	    		if (wfsel.getSelectedItem() == SynStim.WAVEFORMS_LFO[0]) {
+	    			waveformselect.set(0);
+	    		}
+	    		else if  (wfsel.getSelectedItem() == SynStim.WAVEFORMS_LFO[1]) {
+	    			waveformselect.set(1);
+	    		}
+	    		else if  (wfsel.getSelectedItem() == SynStim.WAVEFORMS_LFO[2]) {
+	    			waveformselect.set(2);
+	    		}
+	    		else if  (wfsel.getSelectedItem() == SynStim.WAVEFORMS_LFO[3]) {
+	    			waveformselect.set(3);
+	    		}
+	    		else if  (wfsel.getSelectedItem() == SynStim.WAVEFORMS_LFO[4]) {
+	    			waveformselect.set(4);
+	    			dutycycle_knob.setVisible(true);
+	    		}
+	       		else {
+	     			System.err.print("***ERROR***");
+	     			System.exit(0);
+	     		}
+	    	}
+    	});
+    	lfo_panel.add(wfsel, "aligny bottom");
+        JToggleButton onfoff = new JToggleButton(this.name + " ON/OFF");
+        onfoff.addItemListener(new ItemListener() {
+        	public void itemStateChanged(ItemEvent itemEvent) {
+        		if(isEnabled()) {
+        			setEnabled(false);			
+        		}
+        		else {
+        			setEnabled(true);
+        		}
+        	}
+        });
+        lfo_panel.add(onfoff, "aligny bottom, wrap");
+		
 	}
 	public void waveform_select(int w) {
 		waveformselect.set(w);
@@ -23,6 +94,15 @@ public class LowFrequencyOscillator extends UnitOscillator {
     }
     public void off() {
     	setEnabled(false);
+    }
+    private RotaryTextController setupLinearPortKnob(UnitInputPort port, RotaryTextController knob, DoubleBoundedRangeModel model, double min, double max, String label) {
+    	port.setMinimum(min);
+    	port.setMaximum(max);
+        model = PortModelFactory.createLinearModel(port);
+        knob = new RotaryTextController(model, 10);
+        knob.setBorder(BorderFactory.createTitledBorder(label));
+        knob.setTitle(label);
+        return knob;
     }
 
 	@Override
