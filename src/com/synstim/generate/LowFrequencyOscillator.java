@@ -44,6 +44,7 @@ public class LowFrequencyOscillator extends UnitOscillator {
 		lfo_panel.add(depth_knob);
 		lfo_panel.add(dutycycle_knob);
 		this.waveformselect.set(0);
+		frequency.set(SynStim.LFO_FREQ_MEDIAN);
 		dutycycle_knob.setVisible(false);
 		JComboBox wfsel = new JComboBox(SynStim.WAVEFORMS_LFO);
 		wfsel.addItemListener(new ItemListener() {
@@ -114,7 +115,7 @@ public class LowFrequencyOscillator extends UnitOscillator {
         double currentPhase = phase.getValue();
         switch((int) waveformselect.getValue()) {
     	   	case 0: {//sine
-	            for (int i = start; i < limit; i++) {
+	            for (int i = start; i < limit; i++) {	         
 	                double phaseIncrement = convertFrequencyToPhaseIncrement(frequencies[i]);	           
 	                currentPhase = incrementWrapPhase(currentPhase, phaseIncrement);
 	                outputs[i] = Math.sin(currentPhase * Math.PI) * amplitudes[i];

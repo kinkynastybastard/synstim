@@ -3,31 +3,26 @@ package com.synstim.main;
 import java.awt.Font;
 
 
-import javax.swing.JComboBox;
+
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
 
 import com.jsyn.JSyn;
 import com.jsyn.Synthesizer;
-import com.jsyn.ports.UnitInputPort;
+
 import com.jsyn.scope.AudioScope;
 import com.jsyn.scope.AudioScopeProbe;
-import com.jsyn.swing.DoubleBoundedRangeSlider;
-import com.jsyn.swing.JAppletFrame;
-import com.jsyn.swing.PortControllerFactory;
 import com.jsyn.unitgen.LineOut;
-import com.jsyn.unitgen.LinearRamp;
 import com.synstim.generate.PulseGenerator;
 
 import net.miginfocom.layout.CC;
 import net.miginfocom.swing.MigLayout;
 
 public class SynStim {
-	public static final int    FONTSIZE_LABEL		= 16;
+	public static final int    FONTSIZE_LABEL		= 20;
 	public static final int    FONTSIZE_TITLE		= 40;
 	public static final String MODES[]				= {"Channel", "FM", "AM", "PWM"};
 	public static final String CHANNELS[]			= {"A", "B"};
@@ -65,7 +60,6 @@ public class SynStim {
 	  
 	Synthesizer syn;
 	LineOut lineout;
-	AudioScope scope;
 	PulseGenerator chanA;
 	PulseGenerator chanB;
 	
@@ -75,30 +69,20 @@ public class SynStim {
     	UIManager.put("ComboBox.font", new FontUIResource(new Font("Dialog", Font.PLAIN, SynStim.FONTSIZE_LABEL)));
     	UIManager.put("ToggleButton.font", new FontUIResource(new Font("Dialog", Font.PLAIN, SynStim.FONTSIZE_LABEL)));
     	UIManager.put("TitledBorder.font", new FontUIResource(new Font("Dialog", Font.PLAIN, SynStim.FONTSIZE_LABEL)));
+    	UIManager.put("TextField.font", new FontUIResource(new Font("Dialog", Font.PLAIN, SynStim.FONTSIZE_LABEL)));
 		syn = JSyn.createSynthesizer();
-		scope = new AudioScope(syn);
 		syn.add(lineout = new LineOut());
-		syn.add(chanA = new PulseGenerator("A"));
-		syn.add(chanB = new PulseGenerator("B"));
+		syn.add(chanA = new PulseGenerator("A", syn));
+		syn.add(chanB = new PulseGenerator("B", syn));
 		chanA.output.connect(0, lineout.input, 0);
 		chanB.output.connect(0, lineout.input, 1);
 		syn.start();
     	lineout.start();
-    	AudioScopeProbe probeA = scope.addProbe(chanA.output);
-		AudioScopeProbe probeB = scope.addProbe(chanB.output);
-		probeA.setAutoScaleEnabled(true);
-		probeB.setAutoScaleEnabled(true);
-		probeA.setVerticalScale(0);
-		probeB.setVerticalScale(0);
-		scope.setTriggerMode(AudioScope.TriggerMode.NORMAL);
-		scope.getView().setControlsVisible(false);
-    	scope.start();
 	}
 	
     public void stop() {
     	syn.stop();
     	lineout.stop();
-    	scope.stop();
     }
     
     private JPanel setupGUI() {
@@ -108,13 +92,12 @@ public class SynStim {
 		panel.add(new JLabel("SynStim"), "span 3, center");
 		panel.add(chanA.pulsegen_panel);
 		panel.add(chanB.pulsegen_panel);
-		panel.add(scope.getView(), centering);
 		return panel;
     }
 
 	public static void main(String[] args) {
 		SynStim synstim = new SynStim();
-		JFrame frame = new JFrame("SynStim v0.6.01");
+		JFrame frame = new JFrame("SynStim v0.6.02");
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		synstim.start();

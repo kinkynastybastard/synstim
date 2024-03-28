@@ -3,8 +3,10 @@ package com.synstim.generate;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import com.jsyn.ports.UnitInputPort;
+import com.jsyn.Synthesizer;
 import com.jsyn.ports.UnitOutputPort;
+import com.jsyn.scope.AudioScope;
+import com.jsyn.scope.AudioScopeProbe;
 import com.jsyn.unitgen.Add;
 import com.jsyn.unitgen.Circuit;
 import com.synstim.main.SynStim;
@@ -23,8 +25,9 @@ public class PulseGenerator extends Circuit {
 	public Add am_modulator;
 	public Add pwm_modulator;
 	public UnitOutputPort output;
+	public AudioScope scope;
 	
-	public PulseGenerator(String channel_name) {
+	public PulseGenerator(String channel_name, Synthesizer synth) {
 		this.channel_name = channel_name;
 		//FM
 		this.add(fm = new LowFrequencyOscillator("FM", SynStim.LFO_FREQ_MIN, SynStim.LFO_FREQ_MAX, SynStim.FM_LFO_DEPTH_MIN, SynStim.FM_LFO_DEPTH_MAX, SynStim.LFO_DC_MIN, SynStim.LFO_DC_MAX));
@@ -49,6 +52,23 @@ public class PulseGenerator extends Circuit {
 		this.addPort(output = osc.output);		
 		
 		//GUI Setup
+		scope = new AudioScope(synth);
+		AudioScopeProbe osc_probe = scope.addProbe(osc.output);
+		AudioScopeProbe fm_probe = scope.addProbe(fm.output);
+		AudioScopeProbe am_probe = scope.addProbe(am.output);
+		AudioScopeProbe pwm_probe = scope.addProbe(pwm.output);
+		osc_probe.setAutoScaleEnabled(true);
+		fm_probe.setAutoScaleEnabled(true);
+		am_probe.setAutoScaleEnabled(true);
+		pwm_probe.setAutoScaleEnabled(true);
+		osc_probe.setVerticalScale(0);
+		fm_probe.setVerticalScale(0);
+		am_probe.setVerticalScale(0);
+		pwm_probe.setVerticalScale(0);
+		scope.setTriggerMode(AudioScope.TriggerMode.NORMAL);
+		scope.getView().setControlsVisible(false);
+    	scope.start();
+		
 		CC centering = new CC();
 		centering.alignX("center").spanX();
 		pulsegen_panel = new JPanel();
@@ -58,6 +78,7 @@ public class PulseGenerator extends Circuit {
 		pulsegen_panel.add(fm.lfo_panel, "wrap");
 		pulsegen_panel.add(am.lfo_panel, "wrap");
 		pulsegen_panel.add(pwm.lfo_panel, "wrap");
+		pulsegen_panel.add(scope.getView(), centering);
 	}
 	
 	public void waveform_select(int w) {
@@ -101,6 +122,4 @@ public class PulseGenerator extends Circuit {
     	pwm.off();	
     	pwm.output.disconnect(pwm_modulator.inputB);
     }
-    
-	
 }

@@ -111,8 +111,7 @@ public class StimOscillator extends UnitOscillator {
 		
         switch((int) waveformselect.getValue()) {        	
     		case 0: {							//bPulse
-    			for (int i = start; i < limit; i++) {	
-    				System.out.println(frequencies[i]);
+    			for (int i = start; i < limit; i++) {	    				
 	                double phaseIncrement = convertFrequencyToPhaseIncrement(frequencies[i]);
 	                currentPhase = incrementWrapPhase(currentPhase, phaseIncrement);
 	                double ampl = amplitudes[i];
